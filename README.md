@@ -49,9 +49,7 @@ A structured client brief (`brief.md`) containing:
 - Vercel (deployment)
 - GitHub (versioning and CI-ready structure)
 
----
-
-## Repository Structure
+```
 
 autostudio/
   briefs/                 # Raw client briefs (markdown input)
@@ -73,7 +71,7 @@ autostudio/
     decisions.md
     qa_checklist.md
 
----
+```
 
 ## v1 Scope (MVP)
 
