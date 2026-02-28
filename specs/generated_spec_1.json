@@ -1,0 +1,44 @@
+{
+  "meta": {
+    "generated_at_utc": "2026-02-28T17:55:15.124564+00:00",
+    "source_file": "..\\..\\briefs\\sample_brief_1.md"
+  },
+  "brandName": "PulseDeskX",
+  "tagline": "Work clearer. Deliver faster.",
+  "audience": "Freelancers and small product teams that need an all-in-one workspace.",
+  "theme": {
+    "primaryColor": "#1D4ED8",
+    "accentColor": "#F59E0B",
+    "tone": "Confident, clean, and helpful."
+  },
+  "cta": {
+    "primary": "Start Free Trial",
+    "secondary": "Book a Demo"
+  },
+  "sections": [
+    {
+      "type": "hero",
+      "title": "Hero"
+    },
+    {
+      "type": "features",
+      "title": "Features"
+    },
+    {
+      "type": "testimonials",
+      "title": "Testimonials"
+    },
+    {
+      "type": "faq",
+      "title": "Faq"
+    },
+    {
+      "type": "cta",
+      "title": "Cta"
+    },
+    {
+      "type": "footer",
+      "title": "Footer"
+    }
+  ]
+}
