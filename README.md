@@ -56,18 +56,18 @@ A structured client brief (`brief.md`) containing:
 autostudio/
   briefs/                 # Raw client briefs (markdown input)
   specs/                  # Generated structured specifications (json)
-  
+
   apps/
     web/                  # Next.js application (frontend)
-  
+
   backend/
-    core/                 # Parsing, spec generation logic
+    core/                 # Parsing and spec generation logic
     qa/                   # QA and validation modules
     utils/                # Shared utilities
     main.py               # Entry point (CLI)
 
   scripts/                # Automation wrappers (optional)
-  
+
   docs/
     architecture.md
     decisions.md
