@@ -69,6 +69,8 @@ autostudio/
    ├─ decisions.md
    └─ qa_checklist.md
 ```
+---
+
 ## v1 Scope (MVP)
 
 - Single landing page generation
