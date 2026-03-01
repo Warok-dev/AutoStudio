@@ -1,98 +1,125 @@
-﻿# AutoStudio
+# AutoStudio
 
-AutoStudio is a client website generation pipeline that converts structured input into a production-ready landing page.
+AI-powered client website generator pipeline built for freelancers running a Fiverr-style delivery workflow. AutoStudio converts structured client intake into a landing-page spec, renders it in a Next.js frontend, and packages delivery assets for handoff.
 
-Core flow:
-1. Brief data is collected (manual brief or form JSON).
-2. Python tools generate a normalized `spec.json`.
-3. The Next.js app renders the landing page from that spec.
-4. Delivery artifacts are generated for handoff.
+## Overview
 
-## What AutoStudio Is
+This project models a practical freelance automation pipeline:
 
-AutoStudio turns:
-- `brief.md` -> `spec.json` -> landing page
+- collect a client brief from form data or a manual markdown brief
+- transform the brief into a structured website spec with Python
+- render the spec into a reusable client-facing website
+- generate handoff assets for delivery, QA, and preview sharing
 
-It is built for repeatable client work with clear outputs:
-- Client-specific brief and spec
-- Build-ready web app data
-- Delivery package (`qa_checklist`, `handoff`, `preview_url`, `summary`)
+It is designed as a portfolio-quality systems project: clear orchestration, deterministic outputs, and a workflow that maps directly to real client work.
 
-## How To Generate A Client Site
+## Key Features
 
-Run the full pipeline from repo root:
+- End-to-end pipeline from intake to delivery with `tools/run_pipeline.py`
+- Structured client workspaces in `clients/<client_id>/`
+- Spec-driven website rendering with Next.js, React, and TypeScript
+- Delivery packaging with QA checklist, handoff notes, preview URL, and summary
+- Reusable workflow for multiple freelance clients and repeatable gigs
 
-```bash
-python tools/run_pipeline.py --client pulsedesk --form tools/sample_form_response.json
-```
-
-This executes:
-1. Form JSON -> `clients/<client>/brief.md`
-2. Brief -> `clients/<client>/spec.json`
-3. Copy spec -> `apps/web/src/data/spec.json`
-4. Next.js build in `apps/web`
-5. Delivery generation in `deliveries/<client>/`
-
-### Manual Commands (optional)
-
-```bash
-# Form -> brief
-python tools/form_to_brief.py --in tools/sample_form_response.json --out clients/pulsedesk/brief.md
-
-# Brief -> spec
-python backend/main.py clients/pulsedesk/brief.md --out clients/pulsedesk/spec.json
-
-# Build web app
-cd apps/web
-npm run build
-
-# Generate delivery package
-cd ../..
-python tools/make_delivery.py --client pulsedesk --preview https://example.vercel.app
-```
-
-## Folder Structure
+## Architecture
 
 ```text
-AutoStudio/
-|-- clients/
-|   |-- <client_id>/
-|   |   |-- brief.md
-|   |   `-- spec.json
-|-- deliveries/
-|   |-- _templates/
-|   `-- <client_id>/
-|-- backend/
-|   |-- core/
-|   `-- main.py
-|-- apps/
-|   `-- web/
-|       `-- src/data/spec.json
-`-- tools/
-    |-- form_to_brief.py
-    |-- make_delivery.py
-    `-- run_pipeline.py
+Client Intake
+  Fiverr order / form response / manual brief
+                |
+                v
+      tools/form_to_brief.py
+                |
+                v
+      clients/<client_id>/brief.md
+                |
+                v
+          backend/main.py
+   brief parser + spec generator
+                |
+                v
+      clients/<client_id>/spec.json
+                |
+                v
+ apps/web/src/data/spec.json
+                |
+                v
+       Next.js website renderer
+                |
+                v
+     tools/make_delivery.py
+                |
+                v
+      deliveries/<client_id>/
 ```
-
-## Screenshots
-
-Add project visuals here for portfolio presentation:
-
-- `docs/screenshots/01-form-input.png` - Form or input JSON
-- `docs/screenshots/02-generated-landing.png` - Final landing page
-- `docs/screenshots/03-delivery-folder.png` - Delivery package contents
-
-## Fiverr Workflow
-
-1. Client places order and sends requirements.
-2. Requirements are captured via Google Form export JSON.
-3. Run one command:
-   - `python tools/run_pipeline.py --client <client_id> --form <form_json_path>`
-4. AutoStudio builds the site and prepares delivery files.
-5. Share preview URL and delivery package with the client.
 
 ## Tech Stack
 
-- Python: parsing, generation, orchestration, delivery automation
-- Next.js: spec-driven landing page rendering
-- Vercel: deployment and preview hosting
+- Python 3.11+: pipeline orchestration, brief parsing, spec generation, delivery packaging
+- Next.js 16
+- React 19
+- TypeScript 5
+- Tailwind CSS 4
+- Node.js 20+ and npm
+
+## Setup
+
+```bash
+git clone <repo-url>
+cd AutoStudio
+
+cd apps/web
+npm install
+cd ../..
+```
+
+Run the sample pipeline:
+
+```bash
+python tools/run_pipeline.py --client pulsedesk --form tools/sample_form_response.json --preview https://example.vercel.app
+```
+
+## Environment Variables
+
+The core local pipeline does not require secrets.
+
+| Variable | Required | Purpose |
+| --- | --- | --- |
+| `CLIENT_ID` | No | Used by `apps/web/scripts/generate-spec.mjs` to select which client brief/spec to compile |
+| `NODE_ENV` | No | Standard Next.js runtime/build mode |
+
+Example:
+
+```bash
+CLIENT_ID=pulsedesk
+```
+
+## Usage
+
+1. Client intake: receive a Fiverr order, export form data, or prepare a manual `brief.md`.
+2. Generation: run `python tools/run_pipeline.py --client <client_id> --form <form.json> --preview <preview_url>`.
+3. Review: inspect the generated spec in `clients/<client_id>/spec.json` and build output in `apps/web`.
+4. Delivery: send the packaged files in `deliveries/<client_id>/` plus the live preview link to the client.
+
+## Scripts
+
+- `python tools/run_pipeline.py --client <id> --form <json> --preview <url>`: run the full intake-to-delivery pipeline
+- `python tools/form_to_brief.py --in <json> --out clients/<id>/brief.md`: convert form data into a normalized brief
+- `python backend/main.py clients/<id>/brief.md --out clients/<id>/spec.json`: generate a website spec from the brief
+- `python tools/make_delivery.py --client <id> --preview <url>`: create delivery artifacts
+- `npm run dev` in `apps/web`: start the local frontend
+- `npm run generate` in `apps/web`: regenerate `src/data/spec.json` from a client brief using `CLIENT_ID`
+- `npm run build` in `apps/web`: production build
+- `npm run start` in `apps/web`: serve the production build
+- `npm run lint` in `apps/web`: lint the frontend
+
+## Roadmap
+
+- Plug in LLM providers for richer copy generation and layout variation
+- Add automated visual QA for desktop and mobile screenshots
+- Support multi-page site generation from one client brief
+- Add CI/CD for preview deployment and packaged delivery automation
+
+## License
+
+MIT License. See `LICENSE`.
