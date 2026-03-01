@@ -1,9 +1,9 @@
 {
   "meta": {
-    "generated_at_utc": "2026-03-01T15:07:53.132622+00:00",
-    "source_file": "clients\\demo\\brief.md"
+    "generated_at_utc": "2026-03-01T14:58:03.907997+00:00",
+    "source_file": "clients\\pulsedesk\\brief.md"
   },
-  "brandName": "AutoStudio",
+  "brandName": "DemoDesk",
   "tagline": "One workspace. Faster launches.",
   "audience": "Freelancers and small product teams that need clear project visibility.",
   "theme": {

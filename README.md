@@ -1,115 +1,98 @@
-# AutoStudio
+﻿# AutoStudio
 
-AutoStudio is a multi-agent pipeline that transforms a structured client brief into a production-ready Next.js landing page (code + preview + QA checklist).  
-The project is designed as a portfolio-grade system showcasing automation, software engineering practices, and end-to-end delivery workflows.
+AutoStudio is a client website generation pipeline that converts structured input into a production-ready landing page.
 
----
+Core flow:
+1. Brief data is collected (manual brief or form JSON).
+2. Python tools generate a normalized `spec.json`.
+3. The Next.js app renders the landing page from that spec.
+4. Delivery artifacts are generated for handoff.
 
-## Project Vision
+## What AutoStudio Is
 
-AutoStudio simulates a real-world digital agency workflow by orchestrating multiple roles (Product, Design, Development, QA) into an automated website generation pipeline.
+AutoStudio turns:
+- `brief.md` -> `spec.json` -> landing page
 
-Goals:
-- Reduce website production time
-- Maintain quality and traceability
-- Enable fast iterations through structured inputs and reproducible builds
-- Standardize delivery workflows for client projects (e.g., Fiverr)
+It is built for repeatable client work with clear outputs:
+- Client-specific brief and spec
+- Build-ready web app data
+- Delivery package (`qa_checklist`, `handoff`, `preview_url`, `summary`)
 
----
+## How To Generate A Client Site
 
-## How It Works (v1)
+Run the full pipeline from repo root:
 
-### Input
-A structured client brief (`brief.md`) containing:
-- Brand name and tagline
-- Target audience
-- Style preferences (colors, tone)
-- Required sections (hero, features, FAQ, CTA, etc.)
-- Content and assets references
+```bash
+python tools/run_pipeline.py --client pulsedesk --form tools/sample_form_response.json
+```
 
-### Processing
-1. A Python pipeline parses the brief and generates a structured specification (`spec.json`)
-2. The Next.js app renders the landing page from the specification
-3. A QA checklist validates the output (manual + scriptable checks)
-4. The site is deployed to Vercel to provide a preview link
+This executes:
+1. Form JSON -> `clients/<client>/brief.md`
+2. Brief -> `clients/<client>/spec.json`
+3. Copy spec -> `apps/web/src/data/spec.json`
+4. Next.js build in `apps/web`
+5. Delivery generation in `deliveries/<client>/`
 
-### Output
-- Production-ready Next.js landing page
-- Public preview deployment (Vercel)
-- QA checklist validation
-- Delivery-ready project structure
+### Manual Commands (optional)
 
----
+```bash
+# Form -> brief
+python tools/form_to_brief.py --in tools/sample_form_response.json --out clients/pulsedesk/brief.md
+
+# Brief -> spec
+python backend/main.py clients/pulsedesk/brief.md --out clients/pulsedesk/spec.json
+
+# Build web app
+cd apps/web
+npm run build
+
+# Generate delivery package
+cd ../..
+python tools/make_delivery.py --client pulsedesk --preview https://example.vercel.app
+```
+
+## Folder Structure
+
+```text
+AutoStudio/
+|-- clients/
+|   |-- <client_id>/
+|   |   |-- brief.md
+|   |   `-- spec.json
+|-- deliveries/
+|   |-- _templates/
+|   `-- <client_id>/
+|-- backend/
+|   |-- core/
+|   `-- main.py
+|-- apps/
+|   `-- web/
+|       `-- src/data/spec.json
+`-- tools/
+    |-- form_to_brief.py
+    |-- make_delivery.py
+    `-- run_pipeline.py
+```
+
+## Screenshots
+
+Add project visuals here for portfolio presentation:
+
+- `docs/screenshots/01-form-input.png` - Form or input JSON
+- `docs/screenshots/02-generated-landing.png` - Final landing page
+- `docs/screenshots/03-delivery-folder.png` - Delivery package contents
+
+## Fiverr Workflow
+
+1. Client places order and sends requirements.
+2. Requirements are captured via Google Form export JSON.
+3. Run one command:
+   - `python tools/run_pipeline.py --client <client_id> --form <form_json_path>`
+4. AutoStudio builds the site and prepares delivery files.
+5. Share preview URL and delivery package with the client.
 
 ## Tech Stack
 
-- Next.js / React
-- Node.js (project tooling)
-- Python (brief parsing, spec generation, QA automation)
-- Vercel (deployment)
-- GitHub (versioning and CI-ready structure)
-
----
-
-## Repository Structure
-```text
-autostudio/
-├─ briefs/
-├─ specs/
-├─ apps/
-│  └─ web/
-├─ backend/
-│  ├─ core/
-│  ├─ qa/
-│  ├─ utils/
-│  └─ main.py
-├─ scripts/
-└─ docs/
-   ├─ architecture.md
-   ├─ decisions.md
-   └─ qa_checklist.md
-```
----
-
-## v1 Scope (MVP)
-
-- Single landing page generation
-- Manual brief input (`brief.md`)
-- Python-based Brief -> Spec generation
-- Spec-based rendering in Next.js
-- Vercel preview deployment
-- QA checklist documentation
-
----
-
-## Roadmap
-
-### v2
-- Multi-page support (Home / About / Contact)
-- Improved brief parsing and validation (Python)
-- Reusable UI components library
-- Automated checks (lint, link checks, basic SEO rules)
-
-### v3
-- Client portal (submit brief, upload assets, track status)
-- Multi-agent orchestration logic (task planning, role outputs)
-- Automated testing and performance scoring (Lighthouse, accessibility)
-- Template marketplace (multiple landing page styles)
-
----
-
-## Why This Project Matters
-
-AutoStudio demonstrates skills relevant to Computer Engineering and software internships:
-- End-to-end system design (input -> processing -> output -> deployment)
-- Automation and reproducible pipelines
-- Frontend architecture with Next.js
-- Python tooling for parsing, validation, and QA workflows
-- Deployment and delivery practices used in real production environments
-
----
-
-## Author
-
-Built by Ahouzi Mohammed  
-Computer Engineering 
+- Python: parsing, generation, orchestration, delivery automation
+- Next.js: spec-driven landing page rendering
+- Vercel: deployment and preview hosting

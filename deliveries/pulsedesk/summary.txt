@@ -1,0 +1,9 @@
+Delivery package generated for client: pulsedesk
+
+Files generated:
+- deliveries\pulsedesk\qa_checklist.md
+- deliveries\pulsedesk\handoff.md
+- deliveries\pulsedesk\preview_url.txt
+
+Preview URL:
+https://example.vercel.app

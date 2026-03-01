@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "generate": "python ../../backend/main.py ../../briefs/sample_brief_1.md --out ../../specs/generated_spec_1.json",
+    "generate": "node ./scripts/generate-spec.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint"

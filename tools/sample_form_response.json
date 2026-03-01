@@ -1,0 +1,48 @@
+{
+  "clientId": "demo",
+  "brandName": "AutoStudio",
+  "tagline": "One workspace. Faster launches.",
+  "audience": "Freelancers and small product teams that need clear project visibility.",
+  "primaryColor": "#1D4ED8",
+  "accentColor": "#F59E0B",
+  "tone": "Confident, practical, and friendly.",
+  "sections": "hero,features,testimonials,faq,cta,footer",
+  "features": [
+    {
+      "title": "Unified Project View",
+      "description": "Tasks, files, and updates in one place."
+    },
+    {
+      "title": "Client Updates",
+      "description": "Share progress clearly without extra meetings."
+    },
+    {
+      "title": "Delivery Focus",
+      "description": "Reduce noise and ship faster."
+    }
+  ],
+  "testimonials": [
+    {
+      "quote": "We cut status meetings in half and still stayed aligned.",
+      "name": "Maya Rios",
+      "role": "Product Lead"
+    },
+    {
+      "quote": "The team finally has one source of truth.",
+      "name": "Jordan Tate",
+      "role": "Founder"
+    }
+  ],
+  "faq": [
+    {
+      "question": "Is this for small teams?",
+      "answer": "Yes, it is designed for freelancers and compact teams."
+    },
+    {
+      "question": "Can clients see progress?",
+      "answer": "Yes, with read-only updates and clear reporting."
+    }
+  ],
+  "primaryCta": "Start Free Trial",
+  "secondaryCta": "Book a Demo"
+}

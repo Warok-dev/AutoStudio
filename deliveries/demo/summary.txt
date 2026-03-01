@@ -1,0 +1,9 @@
+Delivery package generated for client: demo
+
+Files generated:
+- deliveries\demo\qa_checklist.md
+- deliveries\demo\handoff.md
+- deliveries\demo\preview_url.txt
+
+Preview URL:
+TODO_ADD_PREVIEW_URL
