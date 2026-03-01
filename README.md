@@ -2,6 +2,10 @@
 
 AI-powered client website generator pipeline built for freelancers running a Fiverr-style delivery workflow. AutoStudio converts structured client intake into a landing-page spec, renders it in a Next.js frontend, and packages delivery assets for handoff.
 
+## Live Demo
+
+[View the deployed Vercel demo](https://auto-studio-two.vercel.app/)
+
 ## Overview
 
 This project models a practical freelance automation pipeline:
