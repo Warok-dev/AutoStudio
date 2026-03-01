@@ -26,6 +26,25 @@ export type LandingSection = {
   [key: string]: unknown;
 };
 
+export type FeatureItem = {
+  title?: string;
+  description?: string;
+};
+
+export type TestimonialItem = {
+  quote?: string;
+  role?: string;
+  author?: string;
+  name?: string;
+};
+
+export type FaqItem = {
+  question?: string;
+  answer?: string;
+  q?: string;
+  a?: string;
+};
+
 export type LandingSpec = {
   meta: {
     generated_at_utc: string;
@@ -44,6 +63,9 @@ export type LandingSpec = {
     secondary: string;
   };
   sections: LandingSection[];
+  features?: FeatureItem[];
+  testimonials?: TestimonialItem[];
+  faq?: FaqItem[];
 };
 
 export type Spec = LandingSpec;

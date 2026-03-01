@@ -1,7 +1,7 @@
 # Client Brief - Landing Page
 
 ## Brand
-PulseDeskX
+PulseDesk
 
 ## Tagline
 Work clearer. Deliver faster.

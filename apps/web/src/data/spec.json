@@ -1,0 +1,99 @@
+{
+  "meta": {
+    "generated_at_utc": "2026-02-28T18:30:00.000000+00:00",
+    "source_file": "briefs/sample_brief_1.md"
+  },
+  "brandName": "PulseDesk",
+  "tagline": "Work clearer. Deliver faster.",
+  "audience": "Freelancers and small product teams that need an all-in-one workspace.",
+  "theme": {
+    "primaryColor": "#1D4ED8",
+    "accentColor": "#F59E0B",
+    "tone": "Confident, clean, and helpful."
+  },
+  "cta": {
+    "primary": "Start Free Trial",
+    "secondary": "Book a Demo"
+  },
+  "features": [
+    {
+      "title": "Project Hub",
+      "description": "Keep tasks, files, and timelines in one focused workspace."
+    },
+    {
+      "title": "Client Visibility",
+      "description": "Share clear progress snapshots without extra status meetings."
+    },
+    {
+      "title": "Faster Delivery",
+      "description": "Move from brief to launch with less friction and fewer handoff gaps."
+    }
+  ],
+  "testimonials": [
+    {
+      "quote": "PulseDesk gave our team one source of truth and cut our weekly chaos in half.",
+      "name": "Maya Rios",
+      "role": "Product Lead, Northlane"
+    },
+    {
+      "quote": "We shipped faster in the first month because everyone finally worked from the same plan.",
+      "name": "Jordan Tate",
+      "role": "Founder, Frameforge"
+    },
+    {
+      "quote": "The interface is clean, practical, and easy for clients to understand instantly.",
+      "name": "Elena Brooks",
+      "role": "Creative Director, Studio Harbor"
+    }
+  ],
+  "faq": [
+    {
+      "question": "Is PulseDesk suitable for small teams?",
+      "answer": "Yes. It is designed for freelancers and compact teams that need clarity without heavy setup."
+    },
+    {
+      "question": "Can clients view progress without editing access?",
+      "answer": "Yes. You can share streamlined updates so clients stay aligned without changing project data."
+    },
+    {
+      "question": "Do we need a long onboarding process?",
+      "answer": "No. Most teams can set up a workspace and start within minutes."
+    },
+    {
+      "question": "Can we start before choosing a paid plan?",
+      "answer": "Yes. Start with a free trial, then upgrade when your workflow is ready."
+    }
+  ],
+  "sections": [
+    {
+      "type": "hero",
+      "headline": "Run your studio from one clear workspace.",
+      "subheadline": "PulseDesk aligns teams, clients, and deadlines so delivery stays smooth."
+    },
+    {
+      "type": "features",
+      "title": "Features"
+    },
+    {
+      "type": "testimonials",
+      "title": "Trusted by teams that ship fast",
+      "subheadline": "Real teams using PulseDesk to reduce noise and deliver on time."
+    },
+    {
+      "type": "faq",
+      "title": "Frequently asked questions",
+      "subheadline": "Quick answers before you get started."
+    },
+    {
+      "type": "cta",
+      "headline": "Ready to simplify delivery?",
+      "subtext": "Start with a clean workflow and keep every project moving.",
+      "primary": "Start Free Trial",
+      "secondary": "Book a Demo"
+    },
+    {
+      "type": "footer",
+      "note": "Built for focused teams that want to deliver excellent work."
+    }
+  ]
+}
