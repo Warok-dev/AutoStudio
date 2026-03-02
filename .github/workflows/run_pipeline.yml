@@ -7,6 +7,10 @@ on:
         description: "Client ID"
         required: true
         type: string
+      brand_name:
+        description: "Brand name"
+        required: false
+        type: string  
       issue_number:
         description: "Issue Number"
         required: false
@@ -27,5 +31,6 @@ jobs:
       - name: Print inputs
         run: |
           echo "Client ID: ${{ inputs.client_id }}"
+          echo "Brand name: ${{ inputs.brand_name }}"
           echo "Issue Number: ${{ inputs.issue_number }}"
           echo "Issue URL: ${{ inputs.issue_url }}"
