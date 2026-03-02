@@ -10,7 +10,7 @@ on:
       brand_name:
         description: "Brand name"
         required: false
-        type: string  
+        type: string
       issue_number:
         description: "Issue Number"
         required: false
@@ -24,9 +24,15 @@ jobs:
   run:
     runs-on: ubuntu-latest
 
+    env:
+      
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Print inputs
         run: |
@@ -34,3 +40,36 @@ jobs:
           echo "Brand name: ${{ inputs.brand_name }}"
           echo "Issue Number: ${{ inputs.issue_number }}"
           echo "Issue URL: ${{ inputs.issue_url }}"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies (apps/web)
+        working-directory: apps/web
+        run: npm ci
+
+      - name: Build (apps/web)
+        working-directory: apps/web
+        run: npm run build
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      - name: Deploy to Vercel (prod)
+        working-directory: apps/web
+        run: |
+          vercel deploy --prod \
+            --token="${VERCEL_TOKEN}" \
+            --confirm \
+            > vercel_output.txt
+
+      - name: Extract deploy URL
+        working-directory: apps/web
+        run: |
+          URL=$(grep -oE 'https://[^ ]+\.vercel\.app' vercel_output.txt | head -n 1)
+          echo "DEPLOY_URL=$URL" >> $GITHUB_ENV
+          echo "Deployed to: $URL"
+
+      
