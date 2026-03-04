@@ -53,14 +53,14 @@ jobs:
         run: npm run build
 
       - name: Install Vercel CLI
-        run: npm i -g vercel
+        run: npm install -g vercel
 
       - name: Deploy to Vercel
         id: vercel_deploy
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
-          DEPLOY_URL=$(vercel deploy --token "${VERCEL_TOKEN}")
+          DEPLOY_URL=$(vercel deploy --token "${VERCEL_TOKEN}" --yes)
           echo "DEPLOY_URL=${DEPLOY_URL}"
           echo "deploy_url=${DEPLOY_URL}" >> $GITHUB_OUTPUT
 
@@ -74,7 +74,7 @@ jobs:
             const issueNumber = Number("${{ inputs.issue_number }}");
 
             const body = `
-            Site créé et déployé.
+            ✅ Site généré et déployé.
 
             Brand: ${{ inputs.brand_name }}
             Client ID: ${{ inputs.client_id }}
