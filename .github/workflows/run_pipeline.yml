@@ -45,57 +45,105 @@ jobs:
           echo "Brand name: ${{ inputs.brand_name }}"
           echo "Issue number: ${{ inputs.issue_number }}"
 
-      # ✅ 1) Sanitize client_id to avoid slashes creating subfolders
+      # ---------------------------------------------------
+      # Sanitize client_id (remove / : space etc)
+      # ---------------------------------------------------
       - name: Sanitize client_id
         id: cid
         shell: bash
         run: |
           RAW="${{ inputs.client_id }}"
           SAFE="$(echo "$RAW" | tr '/: ' '---' | tr -cd 'A-Za-z0-9._-')"
+
           echo "RAW=$RAW"
           echo "SAFE=$SAFE"
+
           echo "safe_client_id=$SAFE" >> $GITHUB_OUTPUT
 
-      # ✅ 2) Verify brief exists in clients/<safe_client_id>/brief.md
-      - name: Verify brief exists
+      # ---------------------------------------------------
+      # Automatically find the correct brief
+      # ---------------------------------------------------
+      - name: Find brief automatically
         id: brief
         shell: bash
         run: |
-          BRIEF_PATH="clients/${{ steps.cid.outputs.safe_client_id }}/brief.md"
-          echo "BRIEF_PATH=$BRIEF_PATH" >> $GITHUB_OUTPUT
+          RAW="${{ inputs.client_id }}"
+          BRAND="${{ inputs.brand_name }}"
 
-          if [ ! -f "$BRIEF_PATH" ]; then
-            echo "❌ Brief not found at: $BRIEF_PATH"
-            echo ""
-            echo "📌 Ton client_id original contient peut-être des / qui créent des sous-dossiers."
-            echo "✅ Essaie de vérifier dans clients/ le vrai nom du dossier généré."
-            echo ""
-            echo "Contenu de clients/ (top level):"
+          if [ -z "$BRAND" ]; then
+            BRAND="$(echo "$RAW" | awk -F'/' '{print $1}' | sed 's/[[:space:]]*$//')"
+          fi
+
+          echo "RAW=$RAW"
+          echo "BRAND=$BRAND"
+
+          if [ ! -d "clients/$BRAND" ]; then
+            echo "❌ Brand folder not found: clients/$BRAND"
+            echo "Available folders:"
             ls -la clients || true
             exit 1
           fi
 
-          echo "✅ Brief found: $BRIEF_PATH"
-          echo "---- brief head ----"
-          head -n 40 "$BRIEF_PATH"
-          echo "--------------------"
+          echo "Searching briefs under clients/$BRAND"
 
-      # ✅ 3) Make sure the web app includes the brief in the deployment output
-      # This ensures you can access it at: https://your-site/clients/<safe_id>/brief.md
+          mapfile -t BRIEFS < <(find "clients/$BRAND" -type f -name "brief.md" | sort)
+
+          if [ ${#BRIEFS[@]} -eq 0 ]; then
+            echo "❌ No brief.md found under clients/$BRAND"
+            exit 1
+          fi
+
+          echo "Found briefs:"
+          printf '%s\n' "${BRIEFS[@]}"
+
+          MATCHED=""
+          RAW_DIGITS="$(echo "$RAW" | tr -cd '0-9')"
+
+          for f in "${BRIEFS[@]}"; do
+            F_DIGITS="$(echo "$f" | tr -cd '0-9')"
+            if echo "$F_DIGITS" | grep -q "$RAW_DIGITS"; then
+              MATCHED="$f"
+              break
+            fi
+          done
+
+          if [ -z "$MATCHED" ]; then
+            MATCHED="${BRIEFS[-1]}"
+            echo "No exact match → using latest brief:"
+          else
+            echo "Matched brief:"
+          fi
+
+          echo "$MATCHED"
+
+          echo "brief_path=$MATCHED" >> $GITHUB_OUTPUT
+
+          echo "Preview of brief:"
+          head -n 40 "$MATCHED"
+
+      # ---------------------------------------------------
+      # Copy brief into website public folder
+      # ---------------------------------------------------
       - name: Copy brief into web public folder
         shell: bash
         run: |
           SAFE="${{ steps.cid.outputs.safe_client_id }}"
-          mkdir -p "apps/web/public/clients/$SAFE"
-          cp "${{ steps.brief.outputs.BRIEF_PATH }}" "apps/web/public/clients/$SAFE/brief.md"
-          echo "✅ Copied to apps/web/public/clients/$SAFE/brief.md"
 
-      # ✅ 4) Commit & push if anything changed (important so build != identical)
+          mkdir -p "apps/web/public/clients/$SAFE"
+
+          cp "${{ steps.brief.outputs.brief_path }}" \
+             "apps/web/public/clients/$SAFE/brief.md"
+
+          echo "Brief copied to apps/web/public/clients/$SAFE/brief.md"
+
+      # ---------------------------------------------------
+      # Commit if files changed
+      # ---------------------------------------------------
       - name: Commit changes (if any)
         shell: bash
         run: |
           if git diff --quiet; then
-            echo "No changes to commit."
+            echo "No changes to commit"
             exit 0
           fi
 
@@ -103,10 +151,12 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
           git add -A
-          git commit -m "feat: publish brief for ${{ steps.cid.outputs.safe_client_id }}"
+          git commit -m "publish brief for ${{ steps.cid.outputs.safe_client_id }}"
           git push
 
-      # ✅ 5) Install deps + build
+      # ---------------------------------------------------
+      # Build web app
+      # ---------------------------------------------------
       - name: Install dependencies
         working-directory: apps/web
         run: npm ci
@@ -115,61 +165,69 @@ jobs:
         working-directory: apps/web
         run: npm run build
 
+      # ---------------------------------------------------
+      # Install Vercel CLI
+      # ---------------------------------------------------
       - name: Install Vercel CLI
         run: npm install -g vercel
 
-      # ✅ 6) Vercel Pull (binds project/org properly)
+      # ---------------------------------------------------
+      # Vercel Pull
+      # ---------------------------------------------------
       - name: Vercel Pull
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          vercel pull --yes \
+          vercel pull \
+            --yes \
             --environment=production \
             --token "$VERCEL_TOKEN" \
             --scope "$VERCEL_ORG_ID" \
             --cwd apps/web
 
-      # ✅ 7) Deploy PROD (changes real site)
-      - name: Deploy to Vercel (Production)
-        id: vercel_deploy
+      # ---------------------------------------------------
+      # Deploy
+      # ---------------------------------------------------
+      - name: Deploy to Vercel
+        id: deploy
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         run: |
-          DEPLOY_URL=$(vercel deploy --prod --yes \
+          URL=$(vercel deploy --prod --yes \
             --token "$VERCEL_TOKEN" \
             --scope "$VERCEL_ORG_ID" \
             --cwd apps/web)
 
-          echo "DEPLOY_URL=$DEPLOY_URL"
-          echo "deploy_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+          echo "deploy_url=$URL" >> $GITHUB_OUTPUT
+          echo "Deployed to $URL"
 
-      # ✅ 8) Comment issue with URL + where to find brief
+      # ---------------------------------------------------
+      # Comment GitHub Issue
+      # ---------------------------------------------------
       - name: Comment on GitHub Issue
         if: ${{ inputs.issue_number != '' }}
         uses: actions/github-script@v7
         env:
-          DEPLOY_URL: ${{ steps.vercel_deploy.outputs.deploy_url }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.deploy_url }}
           SAFE_CLIENT_ID: ${{ steps.cid.outputs.safe_client_id }}
         with:
           script: |
             const issueNumber = Number("${{ inputs.issue_number }}");
-            const safeId = process.env.SAFE_CLIENT_ID;
 
-            const body = [
-              "✅ Pipeline OK + déploiement PROD terminé.",
-              "",
-              `Brand: ${"${{ inputs.brand_name }}" || "(not provided)"}`,
-              `Client ID (safe): ${safeId}`,
-              "",
-              "🚀 Production URL:",
-              process.env.DEPLOY_URL,
-              "",
-              "📄 Brief publié dans le site:",
-              `${process.env.DEPLOY_URL}/clients/${safeId}/brief.md`
-            ].join("\n");
+            const body = `
+            ✅ Site généré et déployé
+
+            Brand: ${{ inputs.brand_name }}
+            Client ID: ${process.env.SAFE_CLIENT_ID}
+
+            🚀 Site:
+            ${process.env.DEPLOY_URL}
+
+            📄 Brief:
+            ${process.env.DEPLOY_URL}/clients/${process.env.SAFE_CLIENT_ID}/brief.md
+            `;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
