@@ -1,5 +1,9 @@
 name: Run Pipeline
 
+permissions:
+  contents: read
+  issues: write
+
 on:
   workflow_dispatch:
     inputs:
@@ -12,22 +16,13 @@ on:
         required: false
         type: string
       issue_number:
-        description: "GitHub Issue Number (optional)"
+        description: "Issue Number"
         required: false
         type: string
       issue_url:
-        description: "GitHub Issue URL (optional)"
+        description: "Issue URL"
         required: false
         type: string
-      deploy_prod:
-        description: "Deploy to PRODUCTION (auto-studio-two.vercel.app)"
-        required: false
-        default: false
-        type: boolean
-
-permissions:
-  contents: read
-  issues: write
 
 jobs:
   run:
@@ -41,16 +36,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: "npm"
-          cache-dependency-path: apps/web/package-lock.json
 
       - name: Print inputs
         run: |
           echo "Client ID: ${{ inputs.client_id }}"
           echo "Brand name: ${{ inputs.brand_name }}"
-          echo "Issue number: ${{ inputs.issue_number }}"
-          echo "Issue URL: ${{ inputs.issue_url }}"
-          echo "Deploy PROD: ${{ inputs.deploy_prod }}"
 
       - name: Install dependencies
         working-directory: apps/web
@@ -61,56 +51,40 @@ jobs:
         run: npm run build
 
       - name: Install Vercel CLI
-        run: npm i -g vercel@latest
+        run: npm install -g vercel
 
-      # PREVIEW deploy (par défaut)
-      - name: Deploy to Vercel (Preview)
-        if: ${{ inputs.deploy_prod == false }}
-        working-directory: apps/web
+      # 🚀 DEPLOY (IMPORTANT : PAS de working-directory ici)
+      - name: Deploy to Vercel
+        id: vercel_deploy
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          DEPLOY_URL=$(vercel deploy --yes --token "$VERCEL_TOKEN")
-          echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_ENV
-          echo "Preview URL: $DEPLOY_URL"
+          DEPLOY_URL=$(vercel deploy --yes --token "${VERCEL_TOKEN}")
+          echo "DEPLOY_URL=${DEPLOY_URL}"
+          echo "deploy_url=${DEPLOY_URL}" >> $GITHUB_OUTPUT
 
-      # PRODUCTION deploy (met à jour auto-studio-two.vercel.app)
-      - name: Deploy to Vercel (Production)
-        if: ${{ inputs.deploy_prod == true }}
-        working-directory: apps/web
-        env:
-          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-        run: |
-          DEPLOY_URL=$(vercel deploy --prod --yes --token "$VERCEL_TOKEN")
-          echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_ENV
-          echo "Production URL: $DEPLOY_URL"
-
-      # Commenter l'issue (optionnel)
-      - name: Comment on GitHub Issue (optional)
+      - name: Comment on GitHub Issue
         if: ${{ inputs.issue_number != '' }}
         uses: actions/github-script@v7
+        env:
+          DEPLOY_URL: ${{ steps.vercel_deploy.outputs.deploy_url }}
         with:
           script: |
-            const issue_number = Number("${{ inputs.issue_number }}");
-            const issue_url = "${{ inputs.issue_url }}";
-            const brand = "${{ inputs.brand_name }}";
-            const clientId = "${{ inputs.client_id }}";
-            const deployUrl = process.env.DEPLOY_URL || "";
+            const issueNumber = Number("${{ inputs.issue_number }}");
 
-            const body =
-              `✅ Site créé et déployé.\n\n` +
-              (brand ? `**Brand:** ${brand}\n` : "") +
-              `**Client ID:** ${clientId}\n` +
-              (deployUrl ? `**URL:** ${deployUrl}\n` : "") +
-              (issue_url ? `\nIssue: ${issue_url}\n` : "");
+            const body = `
+            ✅ Site généré et déployé.
+
+            Brand: ${{ inputs.brand_name }}
+            Client ID: ${{ inputs.client_id }}
+
+            🚀 Preview URL:
+            ${process.env.DEPLOY_URL}
+            `;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number,
-              body
+              issue_number: issueNumber,
+              body: body
             });
