@@ -1,7 +1,7 @@
 name: Run Pipeline
 
 permissions:
-  contents: read
+  contents: write
   issues: write
 
 on:
@@ -31,6 +31,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -39,9 +41,72 @@ jobs:
 
       - name: Print inputs
         run: |
-          echo "Client ID: ${{ inputs.client_id }}"
+          echo "Client ID (raw): ${{ inputs.client_id }}"
           echo "Brand name: ${{ inputs.brand_name }}"
+          echo "Issue number: ${{ inputs.issue_number }}"
 
+      # ✅ 1) Sanitize client_id to avoid slashes creating subfolders
+      - name: Sanitize client_id
+        id: cid
+        shell: bash
+        run: |
+          RAW="${{ inputs.client_id }}"
+          SAFE="$(echo "$RAW" | tr '/: ' '---' | tr -cd 'A-Za-z0-9._-')"
+          echo "RAW=$RAW"
+          echo "SAFE=$SAFE"
+          echo "safe_client_id=$SAFE" >> $GITHUB_OUTPUT
+
+      # ✅ 2) Verify brief exists in clients/<safe_client_id>/brief.md
+      - name: Verify brief exists
+        id: brief
+        shell: bash
+        run: |
+          BRIEF_PATH="clients/${{ steps.cid.outputs.safe_client_id }}/brief.md"
+          echo "BRIEF_PATH=$BRIEF_PATH" >> $GITHUB_OUTPUT
+
+          if [ ! -f "$BRIEF_PATH" ]; then
+            echo "❌ Brief not found at: $BRIEF_PATH"
+            echo ""
+            echo "📌 Ton client_id original contient peut-être des / qui créent des sous-dossiers."
+            echo "✅ Essaie de vérifier dans clients/ le vrai nom du dossier généré."
+            echo ""
+            echo "Contenu de clients/ (top level):"
+            ls -la clients || true
+            exit 1
+          fi
+
+          echo "✅ Brief found: $BRIEF_PATH"
+          echo "---- brief head ----"
+          head -n 40 "$BRIEF_PATH"
+          echo "--------------------"
+
+      # ✅ 3) Make sure the web app includes the brief in the deployment output
+      # This ensures you can access it at: https://your-site/clients/<safe_id>/brief.md
+      - name: Copy brief into web public folder
+        shell: bash
+        run: |
+          SAFE="${{ steps.cid.outputs.safe_client_id }}"
+          mkdir -p "apps/web/public/clients/$SAFE"
+          cp "${{ steps.brief.outputs.BRIEF_PATH }}" "apps/web/public/clients/$SAFE/brief.md"
+          echo "✅ Copied to apps/web/public/clients/$SAFE/brief.md"
+
+      # ✅ 4) Commit & push if anything changed (important so build != identical)
+      - name: Commit changes (if any)
+        shell: bash
+        run: |
+          if git diff --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git commit -m "feat: publish brief for ${{ steps.cid.outputs.safe_client_id }}"
+          git push
+
+      # ✅ 5) Install deps + build
       - name: Install dependencies
         working-directory: apps/web
         run: npm ci
@@ -53,38 +118,62 @@ jobs:
       - name: Install Vercel CLI
         run: npm install -g vercel
 
-      # 🚀 DEPLOY (IMPORTANT : PAS de working-directory ici)
-      - name: Deploy to Vercel
+      # ✅ 6) Vercel Pull (binds project/org properly)
+      - name: Vercel Pull
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          vercel pull --yes \
+            --environment=production \
+            --token "$VERCEL_TOKEN" \
+            --scope "$VERCEL_ORG_ID" \
+            --cwd apps/web
+
+      # ✅ 7) Deploy PROD (changes real site)
+      - name: Deploy to Vercel (Production)
         id: vercel_deploy
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
         run: |
-          DEPLOY_URL=$(vercel deploy --yes --token "${VERCEL_TOKEN}")
-          echo "DEPLOY_URL=${DEPLOY_URL}"
-          echo "deploy_url=${DEPLOY_URL}" >> $GITHUB_OUTPUT
+          DEPLOY_URL=$(vercel deploy --prod --yes \
+            --token "$VERCEL_TOKEN" \
+            --scope "$VERCEL_ORG_ID" \
+            --cwd apps/web)
 
+          echo "DEPLOY_URL=$DEPLOY_URL"
+          echo "deploy_url=$DEPLOY_URL" >> $GITHUB_OUTPUT
+
+      # ✅ 8) Comment issue with URL + where to find brief
       - name: Comment on GitHub Issue
         if: ${{ inputs.issue_number != '' }}
         uses: actions/github-script@v7
         env:
           DEPLOY_URL: ${{ steps.vercel_deploy.outputs.deploy_url }}
+          SAFE_CLIENT_ID: ${{ steps.cid.outputs.safe_client_id }}
         with:
           script: |
             const issueNumber = Number("${{ inputs.issue_number }}");
+            const safeId = process.env.SAFE_CLIENT_ID;
 
-            const body = `
-            ✅ Site généré et déployé.
-
-            Brand: ${{ inputs.brand_name }}
-            Client ID: ${{ inputs.client_id }}
-
-            🚀 Preview URL:
-            ${process.env.DEPLOY_URL}
-            `;
+            const body = [
+              "✅ Pipeline OK + déploiement PROD terminé.",
+              "",
+              `Brand: ${"${{ inputs.brand_name }}" || "(not provided)"}`,
+              `Client ID (safe): ${safeId}`,
+              "",
+              "🚀 Production URL:",
+              process.env.DEPLOY_URL,
+              "",
+              "📄 Brief publié dans le site:",
+              `${process.env.DEPLOY_URL}/clients/${safeId}/brief.md`
+            ].join("\n");
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issueNumber,
-              body: body
+              body
             });
