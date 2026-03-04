@@ -7,20 +7,12 @@ permissions:
 on:
   workflow_dispatch:
     inputs:
-      client_id:
-        description: "Client ID"
+      issue_number:
+        description: "Issue Number (used as client_id)"
         required: true
         type: string
       brand_name:
         description: "Brand name"
-        required: false
-        type: string
-      issue_number:
-        description: "Issue Number"
-        required: false
-        type: string
-      issue_url:
-        description: "Issue URL"
         required: false
         type: string
 
@@ -29,118 +21,73 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ---------------------------------------------------
+      # Checkout repo
+      # ---------------------------------------------------
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # ---------------------------------------------------
+      # Setup Node
+      # ---------------------------------------------------
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      - name: Print inputs
-        run: |
-          echo "Client ID (raw): ${{ inputs.client_id }}"
-          echo "Brand name: ${{ inputs.brand_name }}"
-          echo "Issue number: ${{ inputs.issue_number }}"
-
       # ---------------------------------------------------
-      # Sanitize client_id (remove / : space etc)
+      # Define client_id = issue_number
       # ---------------------------------------------------
-      - name: Sanitize client_id
+      - name: Set client id
         id: cid
-        shell: bash
         run: |
-          RAW="${{ inputs.client_id }}"
-          SAFE="$(echo "$RAW" | tr '/: ' '---' | tr -cd 'A-Za-z0-9._-')"
-
-          echo "RAW=$RAW"
-          echo "SAFE=$SAFE"
-
-          echo "safe_client_id=$SAFE" >> $GITHUB_OUTPUT
+          CLIENT_ID="${{ inputs.issue_number }}"
+          echo "client_id=$CLIENT_ID" >> $GITHUB_OUTPUT
+          echo "Client ID = $CLIENT_ID"
 
       # ---------------------------------------------------
-      # Automatically find the correct brief
+      # Verify brief exists
       # ---------------------------------------------------
-      - name: Find brief automatically
+      - name: Verify brief exists
         id: brief
-        shell: bash
         run: |
-          RAW="${{ inputs.client_id }}"
-          BRAND="${{ inputs.brand_name }}"
+          CLIENT_ID="${{ steps.cid.outputs.client_id }}"
+          BRIEF_PATH="clients/$CLIENT_ID/brief.md"
 
-          if [ -z "$BRAND" ]; then
-            BRAND="$(echo "$RAW" | awk -F'/' '{print $1}' | sed 's/[[:space:]]*$//')"
-          fi
+          echo "Looking for brief at: $BRIEF_PATH"
 
-          echo "RAW=$RAW"
-          echo "BRAND=$BRAND"
-
-          if [ ! -d "clients/$BRAND" ]; then
-            echo "❌ Brand folder not found: clients/$BRAND"
-            echo "Available folders:"
+          if [ ! -f "$BRIEF_PATH" ]; then
+            echo "❌ Brief not found."
+            echo "Existing clients:"
             ls -la clients || true
             exit 1
           fi
 
-          echo "Searching briefs under clients/$BRAND"
+          echo "✅ Brief found"
+          head -n 20 "$BRIEF_PATH"
 
-          mapfile -t BRIEFS < <(find "clients/$BRAND" -type f -name "brief.md" | sort)
-
-          if [ ${#BRIEFS[@]} -eq 0 ]; then
-            echo "❌ No brief.md found under clients/$BRAND"
-            exit 1
-          fi
-
-          echo "Found briefs:"
-          printf '%s\n' "${BRIEFS[@]}"
-
-          MATCHED=""
-          RAW_DIGITS="$(echo "$RAW" | tr -cd '0-9')"
-
-          for f in "${BRIEFS[@]}"; do
-            F_DIGITS="$(echo "$f" | tr -cd '0-9')"
-            if echo "$F_DIGITS" | grep -q "$RAW_DIGITS"; then
-              MATCHED="$f"
-              break
-            fi
-          done
-
-          if [ -z "$MATCHED" ]; then
-            MATCHED="${BRIEFS[-1]}"
-            echo "No exact match → using latest brief:"
-          else
-            echo "Matched brief:"
-          fi
-
-          echo "$MATCHED"
-
-          echo "brief_path=$MATCHED" >> $GITHUB_OUTPUT
-
-          echo "Preview of brief:"
-          head -n 40 "$MATCHED"
+          echo "brief_path=$BRIEF_PATH" >> $GITHUB_OUTPUT
 
       # ---------------------------------------------------
-      # Copy brief into website public folder
+      # Copy brief to web public folder
       # ---------------------------------------------------
       - name: Copy brief into web public folder
-        shell: bash
         run: |
-          SAFE="${{ steps.cid.outputs.safe_client_id }}"
+          CLIENT_ID="${{ steps.cid.outputs.client_id }}"
 
-          mkdir -p "apps/web/public/clients/$SAFE"
+          mkdir -p "apps/web/public/clients/$CLIENT_ID"
 
           cp "${{ steps.brief.outputs.brief_path }}" \
-             "apps/web/public/clients/$SAFE/brief.md"
+             "apps/web/public/clients/$CLIENT_ID/brief.md"
 
-          echo "Brief copied to apps/web/public/clients/$SAFE/brief.md"
+          echo "Brief copied to apps/web/public/clients/$CLIENT_ID/brief.md"
 
       # ---------------------------------------------------
-      # Commit if files changed
+      # Commit if changes
       # ---------------------------------------------------
-      - name: Commit changes (if any)
-        shell: bash
+      - name: Commit changes
         run: |
           if git diff --quiet; then
             echo "No changes to commit"
@@ -150,17 +97,20 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add -A
-          git commit -m "publish brief for ${{ steps.cid.outputs.safe_client_id }}"
+          git add .
+          git commit -m "Publish brief for client ${{ steps.cid.outputs.client_id }}"
           git push
 
       # ---------------------------------------------------
-      # Build web app
+      # Install dependencies
       # ---------------------------------------------------
       - name: Install dependencies
         working-directory: apps/web
         run: npm ci
 
+      # ---------------------------------------------------
+      # Build site
+      # ---------------------------------------------------
       - name: Build
         working-directory: apps/web
         run: npm run build
@@ -204,29 +154,28 @@ jobs:
           echo "Deployed to $URL"
 
       # ---------------------------------------------------
-      # Comment GitHub Issue
+      # Comment on GitHub Issue
       # ---------------------------------------------------
       - name: Comment on GitHub Issue
-        if: ${{ inputs.issue_number != '' }}
         uses: actions/github-script@v7
         env:
           DEPLOY_URL: ${{ steps.deploy.outputs.deploy_url }}
-          SAFE_CLIENT_ID: ${{ steps.cid.outputs.safe_client_id }}
+          CLIENT_ID: ${{ steps.cid.outputs.client_id }}
         with:
           script: |
-            const issueNumber = Number("${{ inputs.issue_number }}");
+            const issueNumber = Number(process.env.CLIENT_ID);
 
             const body = `
             ✅ Site généré et déployé
 
+            Client ID: ${process.env.CLIENT_ID}
             Brand: ${{ inputs.brand_name }}
-            Client ID: ${process.env.SAFE_CLIENT_ID}
 
             🚀 Site:
             ${process.env.DEPLOY_URL}
 
             📄 Brief:
-            ${process.env.DEPLOY_URL}/clients/${process.env.SAFE_CLIENT_ID}/brief.md
+            ${process.env.DEPLOY_URL}/clients/${process.env.CLIENT_ID}/brief.md
             `;
 
             await github.rest.issues.createComment({
