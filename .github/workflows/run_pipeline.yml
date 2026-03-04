@@ -39,29 +39,29 @@ jobs:
           node-version: 20
 
       - name: Install Vercel CLI
-        run: npm i -g vercel@latest
+        run: npm install -g vercel
 
       - name: Print inputs
         run: |
-          echo "client_id=${{ inputs.client_id }}"
-          echo "brand_name=${{ inputs.brand_name }}"
-          echo "issue_number=${{ inputs.issue_number }}"
-          echo "issue_url=${{ inputs.issue_url }}"
+          echo "Client ID: ${{ inputs.client_id }}"
+          echo "Brand Name: ${{ inputs.brand_name }}"
+          echo "Issue Number: ${{ inputs.issue_number }}"
+          echo "Issue URL: ${{ inputs.issue_url }}"
 
       - name: Install dependencies
         working-directory: apps/web
         run: npm ci
 
-      - name: Build
+      - name: Build project
         working-directory: apps/web
         run: npm run build
 
-      - name: Deploy to Vercel (Preview)
-        working-directory: apps/web
+      - name: Deploy to Vercel
         run: |
+          cd apps/web
           DEPLOY_URL=$(vercel deploy --token "$VERCEL_TOKEN" --yes)
           echo "DEPLOY_URL=$DEPLOY_URL" >> $GITHUB_ENV
-          echo "Deployed to: $DEPLOY_URL"
+          echo "Deployed to $DEPLOY_URL"
 
       - name: Comment on GitHub Issue (optional)
         if: ${{ inputs.issue_number != '' }}
@@ -70,10 +70,15 @@ jobs:
           script: |
             const issue_number = Number('${{ inputs.issue_number }}');
             const url = process.env.DEPLOY_URL;
-            const brand = '${{ inputs.brand_name }}' || '';
+            const brand = '${{ inputs.brand_name }}';
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number,
-              body: `✅ Site créé et déployé.\n\n🏷️ Brand: ${brand}\n🔗 Preview: ${url}\n\nClient ID: ${{ inputs.client_id }}`
+              body: `✅ Site généré et déployé.
+
+Brand: ${brand}
+URL: ${url}
+
+Client ID: ${{ inputs.client_id }}`
             });
