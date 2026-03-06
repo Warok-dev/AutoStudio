@@ -21,16 +21,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ---------------------------------------------------
+      # Checkout repository
+      # ---------------------------------------------------
       - name: Checkout repo
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # ---------------------------------------------------
+      # Setup Node
+      # ---------------------------------------------------
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
+      # ---------------------------------------------------
+      # Set client_id = issue_number
+      # ---------------------------------------------------
       - name: Set client id
         id: cid
         run: |
@@ -38,6 +47,9 @@ jobs:
           echo "client_id=$CLIENT_ID" >> $GITHUB_OUTPUT
           echo "Client ID = $CLIENT_ID"
 
+      # ---------------------------------------------------
+      # Verify brief exists
+      # ---------------------------------------------------
       - name: Verify brief exists
         id: brief
         run: |
@@ -58,12 +70,18 @@ jobs:
 
           echo "brief_path=$BRIEF_PATH" >> $GITHUB_OUTPUT
 
+      # ---------------------------------------------------
+      # Copy brief into web public folder
+      # ---------------------------------------------------
       - name: Copy brief into web public folder
         run: |
           CLIENT_ID="${{ steps.cid.outputs.client_id }}"
           mkdir -p "apps/web/public/clients/$CLIENT_ID"
           cp "${{ steps.brief.outputs.brief_path }}" "apps/web/public/clients/$CLIENT_ID/brief.md"
 
+      # ---------------------------------------------------
+      # Commit changes if needed
+      # ---------------------------------------------------
       - name: Commit changes
         run: |
           if git diff --quiet; then
@@ -78,17 +96,29 @@ jobs:
           git commit -m "Publish brief for client ${{ steps.cid.outputs.client_id }}"
           git push
 
+      # ---------------------------------------------------
+      # Install dependencies
+      # ---------------------------------------------------
       - name: Install dependencies
         working-directory: apps/web
         run: npm ci
 
+      # ---------------------------------------------------
+      # Build Next.js
+      # ---------------------------------------------------
       - name: Build
         working-directory: apps/web
         run: npm run build
 
+      # ---------------------------------------------------
+      # Install Vercel CLI
+      # ---------------------------------------------------
       - name: Install Vercel CLI
         run: npm install -g vercel
 
+      # ---------------------------------------------------
+      # Sync project config from Vercel
+      # ---------------------------------------------------
       - name: Vercel Pull
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
@@ -99,9 +129,11 @@ jobs:
             --yes \
             --environment=production \
             --token "$VERCEL_TOKEN" \
-            --scope "$VERCEL_ORG_ID" \
-            --cwd apps/web
+            --scope "$VERCEL_ORG_ID"
 
+      # ---------------------------------------------------
+      # Deploy to Vercel
+      # ---------------------------------------------------
       - name: Deploy to Vercel
         id: deploy
         env:
@@ -109,7 +141,6 @@ jobs:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
         run: |
-          cd apps/web
           URL=$(vercel deploy --prod --yes \
             --token "$VERCEL_TOKEN" \
             --scope "$VERCEL_ORG_ID")
@@ -117,6 +148,9 @@ jobs:
           echo "deploy_url=$URL" >> $GITHUB_OUTPUT
           echo "Deployed to $URL"
 
+      # ---------------------------------------------------
+      # Comment on GitHub Issue
+      # ---------------------------------------------------
       - name: Comment on GitHub Issue
         uses: actions/github-script@v7
         env:
