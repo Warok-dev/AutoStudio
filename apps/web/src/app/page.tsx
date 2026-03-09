@@ -7,6 +7,7 @@ import Hero from "@/src/components/sections/Hero";
 import Testimonials from "@/src/components/sections/Testimonials";
 import { loadSpec } from "@/src/lib/loadSpec";
 import type { FaqItem, FeatureItem, LandingSection, Spec, TestimonialItem } from "@/src/types/spec";
+import Link from "next/link";
 
 type SectionData = {
   features: FeatureItem[];
@@ -81,6 +82,25 @@ export default async function Home() {
           faq: normalizedFaq,
         })
       )}
+      <section className="border-t border-zinc-200 bg-zinc-50 px-6 py-16">
+        <div className="mx-auto max-w-4xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">Client Pages</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-900">Open a deployed brief by issue number</h2>
+          <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-600">
+            Each GitHub issue number is the canonical <code>client_id</code>. When the pipeline publishes a brief, the
+            app exposes it at <code>/c/&lt;issue_number&gt;</code>.
+          </p>
+          <div className="mt-6 flex flex-wrap items-center gap-4">
+            <Link
+              href="/c/21"
+              className="inline-flex items-center rounded-full bg-zinc-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-zinc-700"
+            >
+              Open example route
+            </Link>
+            <p className="text-sm text-zinc-500">Replace <code>21</code> with any existing issue number.</p>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
