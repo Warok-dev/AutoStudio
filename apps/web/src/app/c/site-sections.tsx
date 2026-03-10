@@ -45,7 +45,7 @@ export function HeroSection({
       <div className="absolute bottom-[-8rem] left-1/2 h-64 w-[42rem] -translate-x-1/2 rounded-full bg-white/50 blur-3xl" />
       <div className="absolute bottom-[-10rem] left-1/2 h-56 w-[34rem] -translate-x-1/2 rounded-full bg-sky-100/40 blur-3xl" />
 
-      <div className="relative mx-auto max-w-7xl px-6 pb-24 pt-6 sm:px-8 lg:px-12 lg:pb-32">
+      <div className="relative mx-auto max-w-7xl px-6 pb-20 pt-6 sm:px-8 lg:px-12 lg:pb-24">
         <nav className="flex flex-col gap-6 rounded-[2rem] border border-white/15 bg-white/8 px-5 py-4 shadow-[0_20px_80px_rgba(15,23,42,0.18)] backdrop-blur-xl sm:px-6 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <p className="text-lg font-semibold tracking-tight text-white">{brandName}</p>
@@ -66,7 +66,7 @@ export function HeroSection({
           </a>
         </nav>
 
-        <div className="grid gap-14 pb-4 pt-16 lg:grid-cols-[1.12fr_0.88fr] lg:items-center lg:gap-16 lg:pt-24">
+        <div className="grid gap-12 pb-2 pt-14 lg:grid-cols-[1.12fr_0.88fr] lg:items-center lg:gap-14 lg:pt-20">
           <div className="max-w-3xl">
             <p
               className="inline-flex rounded-full border border-white/15 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.28em] text-white/88"
@@ -77,9 +77,9 @@ export function HeroSection({
             <h1 className="mt-8 max-w-4xl text-5xl font-semibold tracking-[-0.06em] text-white sm:text-7xl lg:text-[5.5rem] lg:leading-[0.95]">
               {hero.title}
             </h1>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/72 sm:text-2xl sm:leading-10">{hero.subtitle}</p>
-            <p className="mt-8 max-w-2xl text-base leading-8 text-white/64 sm:text-lg">{hero.description}</p>
-            <div className="mt-10 flex flex-wrap gap-4">
+            <p className="mt-5 max-w-2xl text-lg leading-8 text-white/72 sm:text-[1.35rem] sm:leading-9">{hero.subtitle}</p>
+            <p className="mt-6 max-w-2xl text-base leading-7 text-white/64 sm:text-lg">{hero.description}</p>
+            <div className="mt-8 flex flex-wrap gap-4">
               <a
                 href="#cta"
                 className="inline-flex items-center rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-zinc-950 shadow-[0_14px_30px_rgba(15,23,42,0.18)] transition hover:bg-white/90"
@@ -130,7 +130,7 @@ export function HeroSection({
 export function BenefitsSection({ benefits, theme }: { benefits: SiteBenefit[]; theme: SiteTheme }) {
   return (
     <SectionShell className="border-b border-zinc-200/80 bg-white/90">
-      <div className="py-14 lg:py-16">
+      <div className="py-10 lg:py-12">
         <div className="grid gap-5 md:grid-cols-3">
           {benefits.map((feature) => (
             <article
@@ -144,7 +144,7 @@ export function BenefitsSection({ benefits, theme }: { benefits: SiteBenefit[]; 
                 {feature.title}
               </p>
               <p className="mt-5 text-xl font-semibold tracking-tight text-zinc-950">{feature.title}</p>
-              <p className="mt-4 text-base leading-8 text-zinc-600">{feature.description}</p>
+              <p className="mt-3 text-base leading-7 text-zinc-600">{feature.description}</p>
             </article>
           ))}
         </div>
@@ -156,13 +156,13 @@ export function BenefitsSection({ benefits, theme }: { benefits: SiteBenefit[]; 
 export function AboutSection({ about }: { about: SiteAbout }) {
   return (
     <SectionShell id="about" className="border-b border-zinc-200/80 bg-white">
-      <div className="grid gap-10 py-24 lg:grid-cols-[0.9fr_1.1fr] lg:py-28">
+      <div className="grid gap-8 py-16 lg:grid-cols-[0.9fr_1.1fr] lg:py-20">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">{about.eyebrow}</p>
-          <h2 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">{about.title}</h2>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-[2.75rem]">{about.title}</h2>
         </div>
-        <div className="rounded-[2.25rem] border border-zinc-200 bg-zinc-50/70 p-10 shadow-[0_22px_60px_rgba(15,23,42,0.05)] sm:p-12">
-          <p className="text-lg leading-8 text-zinc-700 sm:text-xl sm:leading-9">{about.description}</p>
+        <div className="rounded-[2.25rem] border border-zinc-200 bg-zinc-50/70 p-8 shadow-[0_22px_60px_rgba(15,23,42,0.05)] sm:p-10">
+          <p className="text-lg leading-8 text-zinc-700 sm:text-[1.15rem] sm:leading-8">{about.description}</p>
         </div>
       </div>
     </SectionShell>
@@ -172,18 +172,18 @@ export function AboutSection({ about }: { about: SiteAbout }) {
 export function OfferSection({ offer, theme }: { offer: SiteOffer; theme: SiteTheme }) {
   return (
     <SectionShell id="offer" className="border-b border-zinc-200/80 bg-zinc-50/70">
-      <div className="grid gap-8 py-24 lg:grid-cols-[0.9fr_1.1fr] lg:py-28">
-        <div className="rounded-[2.25rem] bg-zinc-950 p-10 text-white shadow-[0_28px_80px_rgba(15,23,42,0.18)] sm:p-12">
+      <div className="grid gap-6 py-16 lg:grid-cols-[0.9fr_1.1fr] lg:py-20">
+        <div className="rounded-[2.25rem] bg-zinc-950 p-8 text-white shadow-[0_28px_80px_rgba(15,23,42,0.18)] sm:p-10">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/60">{offer.eyebrow}</p>
-          <h2 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl">{offer.title}</h2>
-          <p className="mt-6 text-base leading-8 text-white/82 sm:text-lg">{offer.description}</p>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight sm:text-[2.75rem]">{offer.title}</h2>
+          <p className="mt-5 text-base leading-7 text-white/82 sm:text-lg">{offer.description}</p>
         </div>
-        <div className="rounded-[2.25rem] border border-zinc-200 bg-white p-10 shadow-[0_24px_70px_rgba(15,23,42,0.06)] sm:p-12">
-          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">Why it matters</p>
-          <h2 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">{offer.highlight}</h2>
-          <div className="mt-8 rounded-[1.5rem] border border-zinc-100 bg-zinc-50 px-5 py-4">
+        <div className="rounded-[2.25rem] border border-zinc-200 bg-white p-8 shadow-[0_24px_70px_rgba(15,23,42,0.06)] sm:p-10">
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">Commercial framing</p>
+          <h2 className="mt-3 text-3xl font-semibold tracking-tight text-zinc-950 sm:text-[2.25rem]">{offer.highlight}</h2>
+          <div className="mt-6 rounded-[1.5rem] border border-zinc-100 bg-zinc-50 px-5 py-4">
             <span className="text-sm font-semibold uppercase tracking-[0.2em]" style={{ color: theme.accentColor }}>
-              Conversion intent
+              Conversion focus
             </span>
             <p className="mt-3 text-base leading-7 text-zinc-700">{offer.description}</p>
           </div>
@@ -196,13 +196,13 @@ export function OfferSection({ offer, theme }: { offer: SiteOffer; theme: SiteTh
 export function AudienceSection({ audience }: { audience: SiteAudience }) {
   return (
     <SectionShell id="audience" className="border-b border-zinc-200/80 bg-white">
-      <div className="grid gap-8 py-24 lg:grid-cols-[0.8fr_1.2fr] lg:items-start lg:py-28">
+      <div className="grid gap-6 py-16 lg:grid-cols-[0.8fr_1.2fr] lg:items-start lg:py-20">
         <div>
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">{audience.eyebrow}</p>
-          <h2 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">{audience.title}</h2>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-[2.75rem]">{audience.title}</h2>
         </div>
-        <div className="rounded-[2.25rem] border border-zinc-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-10 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:p-12">
-          <p className="text-lg leading-8 text-zinc-700 sm:text-xl sm:leading-9">{audience.description}</p>
+        <div className="rounded-[2.25rem] border border-zinc-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fafc_100%)] p-8 shadow-[0_24px_60px_rgba(15,23,42,0.06)] sm:p-10">
+          <p className="text-lg leading-8 text-zinc-700 sm:text-[1.15rem] sm:leading-8">{audience.description}</p>
         </div>
       </div>
     </SectionShell>
@@ -212,17 +212,17 @@ export function AudienceSection({ audience }: { audience: SiteAudience }) {
 export function PagesPreviewSection({ pages, theme }: { pages: SitePagePreview[]; theme: SiteTheme }) {
   return (
     <SectionShell id="pages" className="border-b border-zinc-200/80 bg-zinc-50/70">
-      <div className="py-24 lg:py-28">
+      <div className="py-16 lg:py-20">
         <div className="flex max-w-3xl flex-col gap-4">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">Pages</p>
-          <h2 className="text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
-            A homepage structure that feels like a real product site.
+          <h2 className="text-4xl font-semibold tracking-tight text-zinc-950 sm:text-[2.75rem]">
+            A page system that reads like a finished site.
           </h2>
           <p className="text-base leading-8 text-zinc-600 sm:text-lg">
-            The generator maps the brief into a coherent site outline, so each client gets a usable marketing structure instead of a raw field dump.
+            Each section supports the same brief, but the output now feels more like a credible product website and less like generated scaffolding.
           </p>
         </div>
-        <div className="mt-10 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {pages.map((page) => (
             <article
               key={page.slug || page.name}
@@ -247,14 +247,14 @@ export function PagesPreviewSection({ pages, theme }: { pages: SitePagePreview[]
 export function FaqSection({ faq }: { faq: SiteFaqItem[] }) {
   return (
     <SectionShell id="faq" className="border-b border-zinc-200/80 bg-white">
-      <div className="py-24 lg:py-28">
+      <div className="py-16 lg:py-20">
         <div className="max-w-3xl">
           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-zinc-500">FAQ</p>
-          <h2 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-5xl">
-            Common questions, pre-answered from the brief.
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-zinc-950 sm:text-[2.75rem]">
+            Questions a serious buyer is likely to ask.
           </h2>
         </div>
-        <div className="mt-10 grid gap-5 lg:grid-cols-3">
+        <div className="mt-8 grid gap-5 lg:grid-cols-3">
           {faq.map((item) => (
             <article
               key={item.question}
@@ -273,7 +273,7 @@ export function FaqSection({ faq }: { faq: SiteFaqItem[] }) {
 export function CTASection({ cta, theme }: { cta: SiteCta; theme: SiteTheme }) {
   return (
     <SectionShell id="cta" className="bg-white">
-      <div className="py-24 lg:py-32">
+      <div className="py-20 lg:py-24">
         <div
           className="relative overflow-hidden rounded-[2.75rem] px-8 py-14 text-white shadow-[0_32px_100px_rgba(15,23,42,0.18)] sm:px-12 sm:py-16 lg:px-16 lg:py-20"
           style={{ background: `linear-gradient(135deg, #0f172a 0%, ${theme.accentColor} 45%, #0f172a 100%)` }}
@@ -285,9 +285,9 @@ export function CTASection({ cta, theme }: { cta: SiteCta; theme: SiteTheme }) {
             <div className="max-w-3xl">
               <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/65">{cta.eyebrow}</p>
               <h2 className="mt-4 text-4xl font-semibold tracking-tight sm:text-5xl lg:text-6xl">{cta.title}</h2>
-              <p className="mt-6 text-base leading-8 text-white/82 sm:text-xl sm:leading-9">{cta.description}</p>
+              <p className="mt-5 text-base leading-8 text-white/82 sm:text-[1.15rem] sm:leading-8">{cta.description}</p>
             </div>
-            <div className="mt-10 flex flex-col gap-4 sm:flex-row">
+            <div className="mt-8 flex flex-col gap-4 sm:flex-row">
               <a
                 href="#top"
                 className="inline-flex items-center justify-center rounded-full bg-white px-6 py-3.5 text-sm font-semibold text-zinc-950 transition hover:opacity-90"
